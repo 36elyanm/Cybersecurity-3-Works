@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Hero Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            background-color: #f0f9ff;
+            color: #1e293b;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .hidden { display: none; }
+        
+        .shake {
+            animation: shake 0.5s core;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <!-- Friendly Auth Screen -->
+    <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-blue-500 hero-gradient p-4">
+        <div class="w-full max-w-md bg-white p-8 rounded-2xl shadow-2xl text-center">
+            <div class="mb-6">
+                <div class="inline-block p-4 bg-blue-100 rounded-full mb-4">
+                    <span class="text-4xl">🛡️</span>
+                </div>
+                <h1 class="text-3xl font-bold text-slate-800">Welcome, Hero!</h1>
+                <p class="text-slate-500 mt-2">Ready to learn how to keep the internet safe?</p>
+            </div>
+
+            <div id="auth-form-container">
+                <!-- Login Section -->
+                <div id="login-fields">
+                    <input type="text" id="username" placeholder="Your Hero Name" class="w-full mb-3 p-3 border-2 border-slate-100 rounded-xl focus:border-blue-400 outline-none transition-all">
+                    <input type="password" id="password" placeholder="Secret Passkey" class="w-full mb-6 p-3 border-2 border-slate-100 rounded-xl focus:border-blue-400 outline-none transition-all">
+                    <button id="login-btn" onclick="handleAuth('login')" class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-lg hover:bg-blue-700 transition-colors shadow-lg">
+                        Let's Go!
+                    </button>
+                    <div class="mt-4 flex flex-col gap-2">
+                        <p class="text-sm text-slate-400">
+                            New here? <button onclick="toggleAuthMode(true)" class="text-blue-600 font-bold underline">Create a Hero Profile</button>
+                        </p>
+                        <button onclick="showStoredUsers()" class="text-[10px] text-slate-300 hover:text-slate-500 uppercase tracking-widest">Check Saved Heroes</button>
+                    </div>
+                </div>
+
+                <!-- Signup Section -->
+                <div id="signup-fields" class="hidden">
+                    <input type="text" id="new-username" placeholder="Pick a Hero Name" class="w-full mb-3 p-3 border-2 border-slate-100 rounded-xl focus:border-blue-400 outline-none">
+                    <input type="password" id="new-password" placeholder="Create a Passkey" class="w-full mb-6 p-3 border-2 border-slate-100 rounded-xl focus:border-blue-400 outline-none">
+                    <button onclick="handleAuth('signup')" class="w-full py-4 bg-green-500 text-white rounded-xl font-bold text-lg hover:bg-green-600 transition-colors shadow-lg">
+                        Join the Academy
+                    </button>
+                    <p class="mt-4 text-sm text-slate-400">
+                        Already a hero? <button onclick="toggleAuthMode(false)" class="text-blue-600 font-bold underline">Log In</button>
+                    </p>
+                </div>
+            </div>
+            
+            <div id="auth-msg" class="mt-4 text-sm font-medium text-red-500 min-h-[20px]"></div>
+        </div>
+    </div>
+
+    <!-- Main Academy Hub -->
+    <div id="main-hub" class="hidden min-h-screen">
+        <header class="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🌟</span>
+                <h2 class="text-xl font-bold text-slate-800">Cyber Hero Academy</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <p id="user-display" class="text-sm font-bold text-blue-600"></p>
+                    <p id="total-score" class="text-xs text-slate-500">Global Score: 0</p>
+                </div>
+                <button onclick="logout()" class="text-xs font-bold text-slate-400 hover:text-red-500 underline">LOGOUT</button>
+            </div>
+        </header>
+
+        <main class="max-w-6xl mx-auto p-6">
+            <!-- Training Missions Grid -->
+            <div id="game-menu">
+                <h3 class="text-2xl font-bold mb-6 text-slate-800">Choose Your Mission:</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-2xl card-hover border-b-4 border-blue-500 cursor-pointer" onclick="loadGame('phishing')">
+                        <div class="text-4xl mb-4">🎣</div>
+                        <h4 class="text-lg font-bold mb-2">Phish Hunter</h4>
+                        <p class="text-sm text-slate-500">Catch sneaky emails that try to trick you!</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl card-hover border-b-4 border-green-500 cursor-pointer" onclick="loadGame('password')">
+                        <div class="text-4xl mb-4">🔑</div>
+                        <h4 class="text-lg font-bold mb-2">Password Power-Up</h4>
+                        <p class="text-sm text-slate-500">Learn to build passwords that no one can guess.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl card-hover border-b-4 border-purple-500 cursor-pointer" onclick="loadGame('crack')">
+                        <div class="text-4xl mb-4">⌨️</div>
+                        <h4 class="text-lg font-bold mb-2">Byte Breaker</h4>
+                        <p class="text-sm text-slate-500">Solve the logic puzzle to unlock the safe!</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl card-hover border-b-4 border-orange-500 cursor-pointer" onclick="loadGame('ports')">
+                        <div class="text-4xl mb-4">🛡️</div>
+                        <h4 class="text-lg font-bold mb-2">Port Defender</h4>
+                        <p class="text-sm text-slate-500">Stop bad traffic while letting good traffic in.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl card-hover border-b-4 border-red-500 cursor-pointer" onclick="loadGame('hardware')">
+                        <div class="text-4xl mb-4">💾</div>
+                        <h4 class="text-lg font-bold mb-2">Hardware Hero</h4>
+                        <p class="text-sm text-slate-500">Spot dangerous USBs and strange gadgets.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Viewport -->
+            <div id="game-viewport" class="hidden bg-white rounded-3xl shadow-xl overflow-hidden p-8 min-h-[500px] flex flex-col">
+                <div class="flex justify-between items-center mb-8">
+                    <button onclick="closeGame()" class="flex items-center gap-2 text-slate-400 hover:text-blue-600 font-bold transition-colors">
+                        <span>⬅️</span> Back to Academy
+                    </button>
+                    <div class="bg-blue-50 px-4 py-2 rounded-full">
+                        <span id="session-score" class="font-bold text-blue-600">MISSION SCORE: 0</span>
+                    </div>
+                </div>
+                <div id="game-content" class="flex-grow flex flex-col items-center justify-center text-center">
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- AUTH & STATE ---
+        // Helper to get fresh data from localStorage
+        function getUsers() {
+            return JSON.parse(localStorage.getItem('cyber_academy_users') || '{}');
+        }
+
+        let currentScore = 0;
+        let sessionScore = 0;
+
+        function toggleAuthMode(isSignup) {
+            document.getElementById('login-fields').classList.toggle('hidden', isSignup);
+            document.getElementById('signup-fields').classList.toggle('hidden', !isSignup);
+            document.getElementById('auth-msg').innerText = '';
+        }
+
+        function handleAuth(mode) {
+            const msgEl = document.getElementById('auth-msg');
+            const users = getUsers();
+            
+            if (mode === 'signup') {
+                const u = document.getElementById('new-username').value.trim();
+                const p = document.getElementById('new-password').value;
+                
+                if(u.length < 3) return msgEl.innerText = "Hero Name must be 3+ characters!";
+                if(users[u]) return msgEl.innerText = "That Hero Name is already taken!";
+                
+                users[u] = p;
+                localStorage.setItem('cyber_academy_users', JSON.stringify(users));
+                finalizeLogin(u);
+            } else {
+                const u = document.getElementById('username').value.trim();
+                const p = document.getElementById('password').value;
+                const btn = document.getElementById('login-btn');
+
+                if(users[u] && users[u] === p) {
+                    finalizeLogin(u);
+                } else {
+                    msgEl.innerText = "Hmm, that Hero Name or Passkey is incorrect!";
+                    btn.classList.add('shake');
+                    setTimeout(() => btn.classList.remove('shake'), 500);
+                }
+            }
+        }
+
+        function showStoredUsers() {
+            const users = getUsers();
+            const names = Object.keys(users);
+            const msgEl = document.getElementById('auth-msg');
+            if(names.length === 0) {
+                msgEl.style.color = "#94a3b8";
+                msgEl.innerText = "No heroes registered yet. Create one!";
+            } else {
+                msgEl.style.color = "#3b82f6";
+                msgEl.innerText = "Registered: " + names.join(", ");
+            }
+        }
+
+        function finalizeLogin(name) {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('main-hub').classList.remove('hidden');
+            document.getElementById('user-display').innerText = `Hero: ${name}`;
+        }
+
+        function logout() { location.reload(); }
+
+        // --- ENGINE ---
+        function updateScore(pts) {
+            sessionScore += pts;
+            currentScore += pts;
+            document.getElementById('session-score').innerText = `MISSION SCORE: ${sessionScore}`;
+            document.getElementById('total-score').innerText = `Global Score: ${currentScore}`;
+        }
+
+        function closeGame() {
+            document.getElementById('game-viewport').classList.add('hidden');
+            document.getElementById('game-menu').classList.remove('hidden');
+            sessionScore = 0;
+            document.getElementById('session-score').innerText = `MISSION SCORE: 0`;
+        }
+
+        function loadGame(type) {
+            document.getElementById('game-menu').classList.add('hidden');
+            document.getElementById('game-viewport').classList.remove('hidden');
+            const content = document.getElementById('game-content');
+            content.innerHTML = '<p class="text-blue-500 font-bold animate-bounce text-xl">Preparing Mission Assets...</p>';
+            
+            setTimeout(() => {
+                if (type === 'phishing') startPhishing();
+                if (type === 'password') startPasswordGame();
+                if (type === 'crack') startByteBreaker();
+                if (type === 'ports') startPortDefender();
+                if (type === 'hardware') startHardwareHero();
+            }, 800);
+        }
+
+        // --- GAME: PASSWORD POWER-UP ---
+        function startPasswordGame() {
+            const tasks = [
+                { hint: "Add a special character (like ! or @)", check: (v) => /[!@#$%^&*]/.test(v) },
+                { hint: "Make it longer (at least 10 characters)", check: (v) => v.length >= 10 },
+                { hint: "Add a number", check: (v) => /[0-9]/.test(v) },
+                { hint: "Mix in an UPPERCASE letter", check: (v) => /[A-Z]/.test(v) }
+            ];
+            let step = 0;
+
+            const render = () => {
+                if (step >= tasks.length) {
+                    document.getElementById('game-content').innerHTML = `
+                        <h2 class="text-3xl font-bold text-green-500 mb-4">SUPER SECURE!</h2>
+                        <p class="mb-6 text-slate-500">You've built an uncrackable password.</p>
+                        <button onclick="startPasswordGame()" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold">Try Another</button>
+                    `;
+                    return;
+                }
+                document.getElementById('game-content').innerHTML = `
+                    <h2 class="text-2xl font-bold mb-2">Build a Strong Password</h2>
+                    <p class="text-slate-500 mb-6 font-medium">Mission: ${tasks[step].hint}</p>
+                    <input type="text" id="pass-input" class="p-4 border-2 rounded-xl text-center w-64 mb-4 outline-none focus:border-green-400" placeholder="Type here...">
+                    <button onclick="window.checkPass()" class="bg-green-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-600 transition-colors">Apply Security!</button>
+                `;
+            };
+
+            window.checkPass = () => {
+                const val = document.getElementById('pass-input').value;
+                if (tasks[step].check(val)) {
+                    step++;
+                    updateScore(100);
+                    render();
+                } else {
+                    const input = document.getElementById('pass-input');
+                    input.classList.add('shake', 'border-red-500');
+                    setTimeout(() => input.classList.remove('shake', 'border-red-500'), 500);
+                }
+            };
+            render();
+        }
+
+        // --- GAME: HARDWARE HERO ---
+        function startHardwareHero() {
+            const items = [
+                { name: "Unknown USB in the parking lot", safe: false, msg: "Never plug in random USBs! They can contain viruses." },
+                { name: "Charger from the official store", safe: true, msg: "Official accessories are generally safe to use." },
+                { name: "A gift USB from a stranger", safe: false, msg: "Always be careful with hardware gifts from strangers." },
+                { name: "Your own mouse from home", safe: true, msg: "Using your own trusted gear is the safest way." }
+            ];
+            let idx = 0;
+
+            const render = () => {
+                const item = items[idx];
+                document.getElementById('game-content').innerHTML = `
+                    <h2 class="text-2xl font-bold mb-6">Is this hardware safe?</h2>
+                    <div class="bg-slate-50 p-10 rounded-3xl mb-8 border-2 border-dashed border-slate-200">
+                        <p class="text-xl font-bold text-slate-700">${item.name}</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <button onclick="window.hwCheck(true)" class="bg-green-500 text-white px-10 py-4 rounded-2xl font-bold hover:bg-green-600 shadow-md">TRUST IT</button>
+                        <button onclick="window.hwCheck(false)" class="bg-red-500 text-white px-10 py-4 rounded-2xl font-bold hover:bg-red-600 shadow-md">REJECT IT</button>
+                    </div>
+                    <p id="hw-feedback" class="mt-6 font-medium text-slate-500 h-6"></p>
+                `;
+            };
+
+            window.hwCheck = (trusted) => {
+                const item = items[idx];
+                const fb = document.getElementById('hw-feedback');
+                if (trusted === item.safe) {
+                    updateScore(100);
+                    fb.className = "mt-6 font-medium text-green-600";
+                    fb.innerText = "Correct! " + item.msg;
+                } else {
+                    updateScore(-50);
+                    fb.className = "mt-6 font-medium text-red-500";
+                    fb.innerText = "Watch out! " + item.msg;
+                }
+                setTimeout(() => {
+                    idx = (idx + 1) % items.length;
+                    render();
+                }, 2000);
+            };
+            render();
+        }
+
+        // --- REMAINING GAMES ---
+        function startPhishing() {
+            const data = [
+                { q: "Email from 'Netflix_Support@gmail.com' asking for credit card info.", phish: true },
+                { q: "Email from 'Teacher@SchoolDistrict.edu' with homework files.", phish: false },
+                { q: "Text from 'Unknown' saying you won a $1000 gift card. Click the link!", phish: true }
+            ];
+            let i = 0;
+            const render = () => {
+                document.getElementById('game-content').innerHTML = `
+                    <h2 class="text-2xl font-bold mb-4">Spot the Phish!</h2>
+                    <div class="bg-blue-50 p-6 rounded-2xl mb-6 italic text-slate-700">"${data[i].q}"</div>
+                    <div class="flex gap-4">
+                        <button onclick="window.phishRes(true)" class="bg-red-400 text-white px-8 py-3 rounded-xl font-bold shadow-sm">SCAM!</button>
+                        <button onclick="window.phishRes(false)" class="bg-blue-400 text-white px-8 py-3 rounded-xl font-bold shadow-sm">LOOKS OK</button>
+                    </div>
+                `;
+            };
+            window.phishRes = (ans) => {
+                if(ans === data[i].phish) updateScore(100);
+                else updateScore(-50);
+                i = (i + 1) % data.length;
+                render();
+            };
+            render();
+        }
+
+        function startByteBreaker() {
+            const secret = Math.floor(Math.random() * 90) + 10;
+            document.getElementById('game-content').innerHTML = `
+                <h2 class="text-2xl font-bold mb-4">Logic Lock</h2>
+                <p class="mb-4 text-slate-500">Guess the 2-digit number (10-99) to unlock the safe!</p>
+                <input type="number" id="guess" class="p-4 border-2 rounded-xl text-center w-32 mb-4 outline-none">
+                <button onclick="window.doGuess()" class="bg-purple-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-purple-600">Unlock</button>
+                <p id="hint" class="mt-4 text-purple-600 font-bold h-6"></p>
+            `;
+            window.doGuess = () => {
+                const g = parseInt(document.getElementById('guess').value);
+                const hint = document.getElementById('hint');
+                if(g === secret) {
+                    updateScore(300);
+                    hint.innerText = "Safe Unlocked!";
+                    setTimeout(startByteBreaker, 1500);
+                } else {
+                    hint.innerText = g < secret ? "Try Higher!" : "Try Lower!";
+                }
+            };
+        }
+
+        function startPortDefender() {
+            document.getElementById('game-content').innerHTML = `
+                <h2 class="text-2xl font-bold mb-4">Port Defender</h2>
+                <p class="mb-6 text-slate-500">Click the red 👾 'Bad Packets' to block them! Avoid the 📧 good ones.</p>
+                <div id="packet-zone" class="relative w-full h-64 bg-slate-100 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-inner"></div>
+            `;
+            const zone = document.getElementById('packet-zone');
+            const spawn = () => {
+                if(!zone || !document.getElementById('packet-zone')) return;
+                const p = document.createElement('button');
+                const isBad = Math.random() > 0.4;
+                p.className = `absolute p-2 rounded-full transition-all text-xl ${isBad ? 'bg-red-500' : 'bg-blue-500'} shadow-md`;
+                p.style.left = Math.random() * 90 + '%';
+                p.style.top = Math.random() * 80 + '%';
+                p.innerText = isBad ? '👾' : '📧';
+                p.onclick = () => {
+                    if(isBad) { updateScore(50); p.remove(); }
+                    else { updateScore(-100); p.innerHTML = "❌"; setTimeout(() => p.remove(), 200); }
+                };
+                zone.appendChild(p);
+                setTimeout(() => p && p.remove(), 2500);
+            };
+            const portInterval = setInterval(spawn, 1000);
+            const observer = new MutationObserver(() => {
+                if(document.getElementById('game-viewport').classList.contains('hidden')) {
+                    clearInterval(portInterval);
+                    observer.disconnect();
+                }
+            });
+            observer.observe(document.getElementById('game-viewport'), { attributes: true });
+        }
+    </script>
+</body>
+</html>
